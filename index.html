@@ -97,12 +97,11 @@
             width: 100vw;
             height: 100vh;
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             justify-content: center;
             flex-shrink: 0;
             overflow-y: auto;
             overflow-x: hidden;
-            padding-top: 20px;
             touch-action: pan-y;
             scroll-snap-align: start;
             scroll-snap-stop: always;
@@ -116,15 +115,7 @@
         }
 
         .slide-counter {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            color: #666;
-            font-size: 0.9rem;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 6px 12px;
-            border-radius: 20px;
-            z-index: 10;
+            display: none;
         }
 
         .back-button {
@@ -183,7 +174,6 @@
 
     <!-- BILDSPEL - PROCESSEN -->
     <div id="gallery-processen" class="gallery-container">
-        <div class="slide-counter"><span id="counter-processen">1</span>/<span id="total-processen">13</span></div>
         <button class="back-button" id="back-processen">← TILLBAKA</button>
         <div class="slideshow" id="slideshow-processen"></div>
         <div class="swipe-hint">Swipa höger för nästa</div>
@@ -191,7 +181,6 @@
 
     <!-- BILDSPEL - PROTOTYPER -->
     <div id="gallery-prototyper" class="gallery-container">
-        <div class="slide-counter"><span id="counter-prototyper">1</span>/<span id="total-prototyper">13</span></div>
         <button class="back-button" id="back-prototyper">← TILLBAKA</button>
         <div class="slideshow" id="slideshow-prototyper"></div>
         <div class="swipe-hint">Swipa höger för nästa</div>
@@ -205,16 +194,14 @@
                 currentIndex: 0,
                 touchStartX: 0,
                 elementId: 'gallery-processen',
-                slideshowId: 'slideshow-processen',
-                counterId: 'counter-processen'
+                slideshowId: 'slideshow-processen'
             },
             prototyper: {
                 images: Array.from({ length: 13 }, (_, i) => `images/prototyper/${i + 1}I.jpg`),
                 currentIndex: 0,
                 touchStartX: 0,
                 elementId: 'gallery-prototyper',
-                slideshowId: 'slideshow-prototyper',
-                counterId: 'counter-prototyper'
+                slideshowId: 'slideshow-prototyper'
             }
         };
 
@@ -229,9 +216,6 @@
                 slide.innerHTML = `<img src="${imagePath}" alt="Bild ${index + 1}">`;
                 slideshow.appendChild(slide);
             });
-
-            // Lyssna på scroll för att uppdatera räknare
-            slideshow.addEventListener('scroll', () => updateCounter(galleryKey));
 
             // Swipe-to-scroll för bättre UX
             slideshow.addEventListener('touchstart', (e) => {
@@ -258,20 +242,6 @@
             });
         }
 
-        function updateCounter(galleryKey) {
-            const gallery = galleries[galleryKey];
-            const slideshow = document.getElementById(gallery.slideshowId);
-            const slideWidth = window.innerWidth;
-            const scrollLeft = slideshow.scrollLeft;
-            const index = Math.round(scrollLeft / slideWidth);
-            const clampedIndex = Math.min(index, gallery.images.length - 1);
-            
-            if (clampedIndex !== gallery.currentIndex) {
-                gallery.currentIndex = clampedIndex;
-                document.getElementById(gallery.counterId).textContent = gallery.currentIndex + 1;
-            }
-        }
-
         // Navigering mellan sidor
         document.getElementById('btn-processen').addEventListener('click', () => {
             document.getElementById('home').classList.add('hidden');
@@ -288,7 +258,6 @@
             document.getElementById('gallery-processen').classList.remove('active');
             document.getElementById('slideshow-processen').scrollLeft = 0;
             galleries.processen.currentIndex = 0;
-            document.getElementById('counter-processen').textContent = '1';
         });
 
         document.getElementById('back-prototyper').addEventListener('click', () => {
@@ -296,7 +265,6 @@
             document.getElementById('gallery-prototyper').classList.remove('active');
             document.getElementById('slideshow-prototyper').scrollLeft = 0;
             galleries.prototyper.currentIndex = 0;
-            document.getElementById('counter-prototyper').textContent = '1';
         });
 
         // Initiera båda gallerier
