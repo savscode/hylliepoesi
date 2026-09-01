@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hylliepoesi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+
+        /* STARTSIDA */
+        #home {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: #C41E3A;
+            padding: 20px;
+            text-align: center;
+        }
+
+        #home.hidden {
+            display: none;
+        }
+
+        .home-title {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 60px;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .nav-button {
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+            font-weight: 400;
+            letter-spacing: 1px;
+        }
+
+        .nav-button:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.98);
+        }
+
+        /* BILDSPEL */
+        .gallery-container {
+            display: none;
+            height: 100vh;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            background: #f5f5f5;
+        }
+
+        .gallery-container.active {
+            display: flex;
+        }
+
+        .slideshow {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: scroll;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            flex-shrink: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-top: 20px;
+            touch-action: pan-y;
+            scroll-snap-align: start;
+            scroll-snap-stop: always;
+        }
+
+        .slide img {
+            width: 100%;
+            height: auto;
+            display: block;
+            max-width: 100%;
+        }
+
+        .slide-counter {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #666;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 6px 12px;
+            border-radius: 20px;
+            z-index: 10;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:active {
+            background: rgba(255, 255, 255, 0.7);
+            transform: scale(0.95);
+        }
+
+        .swipe-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #999;
+            font-size: 0.85rem;
+            text-align: center;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        @media (max-width: 600px) {
+            .home-title {
+                font-size: 2rem;
+                margin-bottom: 50px;
+            }
+
+            .nav-button {
+                padding: 16px 30px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- STARTSIDA -->
+    <div id="home">
+        <h1 class="home-title">HYLLIEPOESI</h1>
+        <div class="button-container">
+            <button class="nav-button" id="btn-processen">PROCESSEN</button>
+            <button class="nav-button" id="btn-prototyper">IDÉBANKEN</button>
+        </div>
+    </div>
+
+    <!-- BILDSPEL - PROCESSEN -->
+    <div id="gallery-processen" class="gallery-container">
+        <div class="slide-counter"><span id="counter-processen">1</span>/<span id="total-processen">13</span></div>
+        <button class="back-button" id="back-processen">← TILLBAKA</button>
+        <div class="slideshow" id="slideshow-processen"></div>
+        <div class="swipe-hint">Swipa höger för nästa</div>
+    </div>
+
+    <!-- BILDSPEL - PROTOTYPER -->
+    <div id="gallery-prototyper" class="gallery-container">
+        <div class="slide-counter"><span id="counter-prototyper">1</span>/<span id="total-prototyper">13</span></div>
+        <button class="back-button" id="back-prototyper">← TILLBAKA</button>
+        <div class="slideshow" id="slideshow-prototyper"></div>
+        <div class="swipe-hint">Swipa höger för nästa</div>
+    </div>
+
+    <script>
+        // Bildsamlingar
+        const galleries = {
+            processen: {
+                images: Array.from({ length: 13 }, (_, i) => `images/processen/${i + 1}P.jpg`),
+                currentIndex: 0,
+                touchStartX: 0,
+                elementId: 'gallery-processen',
+                slideshowId: 'slideshow-processen',
+                counterId: 'counter-processen'
+            },
+            prototyper: {
+                images: Array.from({ length: 13 }, (_, i) => `images/prototyper/${i + 1}I.jpg`),
+                currentIndex: 0,
+                touchStartX: 0,
+                elementId: 'gallery-prototyper',
+                slideshowId: 'slideshow-prototyper',
+                counterId: 'counter-prototyper'
+            }
+        };
+
+        // Initialisera bildspelen
+        function initGallery(galleryKey) {
+            const gallery = galleries[galleryKey];
+            const slideshow = document.getElementById(gallery.slideshowId);
+            
+            gallery.images.forEach((imagePath, index) => {
+                const slide = document.createElement('div');
+                slide.className = 'slide';
+                slide.innerHTML = `<img src="${imagePath}" alt="Bild ${index + 1}">`;
+                slideshow.appendChild(slide);
+            });
+
+            // Lyssna på scroll för att uppdatera räknare
+            slideshow.addEventListener('scroll', () => updateCounter(galleryKey));
+
+            // Swipe-to-scroll för bättre UX
+            slideshow.addEventListener('touchstart', (e) => {
+                gallery.touchStartX = e.touches[0].clientX;
+            });
+
+            slideshow.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].clientX;
+                const deltaX = gallery.touchStartX - touchEndX;
+
+                if (Math.abs(deltaX) > 50) {
+                    const slideWidth = window.innerWidth;
+                    const scrollLeft = slideshow.scrollLeft;
+                    const nextScrollLeft = Math.round(scrollLeft / slideWidth) * slideWidth;
+
+                    if (deltaX < 0 && gallery.currentIndex > 0) {
+                        // Swipa höger - föregående
+                        slideshow.scrollLeft = (gallery.currentIndex - 1) * slideWidth;
+                    } else if (deltaX > 0 && gallery.currentIndex < gallery.images.length - 1) {
+                        // Swipa vänster - nästa
+                        slideshow.scrollLeft = (gallery.currentIndex + 1) * slideWidth;
+                    }
+                }
+            });
+        }
+
+        function updateCounter(galleryKey) {
+            const gallery = galleries[galleryKey];
+            const slideshow = document.getElementById(gallery.slideshowId);
+            const slideWidth = window.innerWidth;
+            const scrollLeft = slideshow.scrollLeft;
+            const index = Math.round(scrollLeft / slideWidth);
+            const clampedIndex = Math.min(index, gallery.images.length - 1);
+            
+            if (clampedIndex !== gallery.currentIndex) {
+                gallery.currentIndex = clampedIndex;
+                document.getElementById(gallery.counterId).textContent = gallery.currentIndex + 1;
+            }
+        }
+
+        // Navigering mellan sidor
+        document.getElementById('btn-processen').addEventListener('click', () => {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('gallery-processen').classList.add('active');
+        });
+
+        document.getElementById('btn-prototyper').addEventListener('click', () => {
+            document.getElementById('home').classList.add('hidden');
+            document.getElementById('gallery-prototyper').classList.add('active');
+        });
+
+        document.getElementById('back-processen').addEventListener('click', () => {
+            document.getElementById('home').classList.remove('hidden');
+            document.getElementById('gallery-processen').classList.remove('active');
+            document.getElementById('slideshow-processen').scrollLeft = 0;
+            galleries.processen.currentIndex = 0;
+            document.getElementById('counter-processen').textContent = '1';
+        });
+
+        document.getElementById('back-prototyper').addEventListener('click', () => {
+            document.getElementById('home').classList.remove('hidden');
+            document.getElementById('gallery-prototyper').classList.remove('active');
+            document.getElementById('slideshow-prototyper').scrollLeft = 0;
+            galleries.prototyper.currentIndex = 0;
+            document.getElementById('counter-prototyper').textContent = '1';
+        });
+
+        // Initiera båda gallerier
+        initGallery('processen');
+        initGallery('prototyper');
+    </script>
+</body>
+</html>
