@@ -226,18 +226,19 @@
             slideshow.addEventListener('touchend', (e) => {
                 const touchEndX = e.changedTouches[0].clientX;
                 const deltaX = gallery.touchStartX - touchEndX;
+                const slideWidth = window.innerWidth;
 
                 if (Math.abs(deltaX) > 50) {
-                    const slideWidth = window.innerWidth;
-                    const scrollLeft = slideshow.scrollLeft;
-                    const nextScrollLeft = Math.round(scrollLeft / slideWidth) * slideWidth;
+                    // Beräkna aktuell index från scrollLeft
+                    const currentScrollLeft = slideshow.scrollLeft;
+                    const currentIdx = Math.round(currentScrollLeft / slideWidth);
 
-                    if (deltaX < 0 && gallery.currentIndex > 0) {
+                    if (deltaX < 0 && currentIdx > 0) {
                         // Swipa höger - föregående
-                        slideshow.scrollLeft = (gallery.currentIndex - 1) * slideWidth;
-                    } else if (deltaX > 0 && gallery.currentIndex < gallery.images.length - 1) {
+                        slideshow.scrollLeft = (currentIdx - 1) * slideWidth;
+                    } else if (deltaX > 0 && currentIdx < gallery.images.length - 1) {
                         // Swipa vänster - nästa
-                        slideshow.scrollLeft = (gallery.currentIndex + 1) * slideWidth;
+                        slideshow.scrollLeft = (currentIdx + 1) * slideWidth;
                     }
                 }
             });
